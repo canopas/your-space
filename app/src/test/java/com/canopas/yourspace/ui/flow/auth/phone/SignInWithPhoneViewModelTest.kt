@@ -122,12 +122,12 @@ class SignInWithPhoneViewModelTest {
     @Test
     fun `verifyPhoneNumber should update error state on verification failed`() = runTest {
         val context = mock<Context>()
-
+        val exception = mock<FirebaseException>()
         viewModel.onPhoneChange("1234567890")
         whenever(firebaseAuth.verifyPhoneNumber(context, "1234567890"))
-            .thenReturn(flowOf(PhoneAuthState.VerificationFailed(Exception("error"))))
+            .thenReturn(flowOf(PhoneAuthState.VerificationFailed(exception)))
         viewModel.verifyPhoneNumber(context)
-        assert(viewModel.state.value.error == "error")
+        assert(viewModel.state.value.error == exception)
     }
 
     @Test

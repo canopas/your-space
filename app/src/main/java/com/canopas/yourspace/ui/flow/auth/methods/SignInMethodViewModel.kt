@@ -49,7 +49,7 @@ class SignInMethodViewModel @Inject constructor(
                 _state.emit(
                     _state.value.copy(
                         showGoogleLoading = false,
-                        error = "Failed to sign in with google"
+                        error = e
                     )
                 )
             }
@@ -79,5 +79,5 @@ class SignInMethodViewModel @Inject constructor(
 
 data class SignInMethodScreenState(
     val showGoogleLoading: Boolean = false,
-    val error: String? = null
+    val error: Exception? = null
 )

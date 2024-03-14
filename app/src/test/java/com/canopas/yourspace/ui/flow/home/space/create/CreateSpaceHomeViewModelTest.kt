@@ -68,10 +68,11 @@ class CreateSpaceHomeViewModelTest {
 
     @Test
     fun `createSpace should update state with error when spaceRepository throws exception`() = runTest {
+        val error = RuntimeException("error")
         whenever(spaceRepository.createSpaceAndGetInviteCode("spaceName"))
-            .thenThrow(RuntimeException("error"))
+            .thenThrow(error)
         viewModel.onSpaceNameChange("spaceName")
         viewModel.createSpace()
-        assert(viewModel.state.value.error == "error")
+        assert(viewModel.state.value.error == error)
     }
 }

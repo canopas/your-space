@@ -71,7 +71,7 @@ class SignInWithPhoneViewModel @Inject constructor(
                             _state.emit(
                                 _state.value.copy(
                                     verifying = false,
-                                    error = result.e.message
+                                    error = result.e
                                 )
                             )
                         }
@@ -95,7 +95,7 @@ class SignInWithPhoneViewModel @Inject constructor(
                 }
         } catch (e: Exception) {
             Timber.e(e, "Unable to verify phone, verification failed")
-            _state.emit(_state.value.copy(verifying = false, error = e.message))
+            _state.emit(_state.value.copy(verifying = false, error = e))
         }
     }
 
@@ -117,7 +117,7 @@ data class SignInWithPhoneState(
     val phone: String = "",
     val verifying: Boolean = false,
     val verificationId: String? = null,
-    val error: String? = null,
+    val error: Exception? = null,
     val enableNext: Boolean = false,
     val showCountryPicker: Boolean = false
 )

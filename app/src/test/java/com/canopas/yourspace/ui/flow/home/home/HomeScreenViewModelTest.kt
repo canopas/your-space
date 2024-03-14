@@ -129,7 +129,7 @@ class HomeScreenViewModelTest {
         whenever(spaceRepository.getAllSpaceInfo()).thenThrow(exception)
 
         setUp()
-        assert(viewModel.state.value.error == "error")
+        assert(viewModel.state.value.error == exception)
     }
 
     @Test
@@ -215,14 +215,15 @@ class HomeScreenViewModelTest {
 
     @Test
     fun `addMember should set error if getInviteCode throws exception`() = runTest {
+        val exception = RuntimeException("error")
         val result = listOf(space_info1, space_info2)
         whenever(spaceRepository.currentSpaceId).thenReturn("space1")
         whenever(spaceRepository.getAllSpaceInfo()).thenReturn(flowOf(result))
-        whenever(spaceRepository.getInviteCode("space1")).thenThrow(RuntimeException("error"))
+        whenever(spaceRepository.getInviteCode("space1")).thenThrow(exception)
 
         setUp()
         viewModel.addMember()
-        assert(viewModel.state.value.error == "error")
+        assert(viewModel.state.value.error == exception)
     }
 
     @Test
@@ -274,14 +275,15 @@ class HomeScreenViewModelTest {
     @Test
     fun `toggleLocation should set error state if enableLocation throws exception`() =
         runTest {
+            val exception = RuntimeException("error")
             whenever(spaceRepository.currentSpaceId).thenReturn("space1")
             whenever(spaceRepository.getAllSpaceInfo()).thenReturn(flowOf(listOf(space_info1)))
             whenever(userPreferences.currentUser).thenReturn(user1)
             whenever(spaceRepository.enableLocation("space1", "user1", false)).thenThrow(
-                RuntimeException("error")
+                exception
             )
             setUp()
             viewModel.toggleLocation()
-            assert(viewModel.state.value.error == "error")
+            assert(viewModel.state.value.error == exception)
         }
 }

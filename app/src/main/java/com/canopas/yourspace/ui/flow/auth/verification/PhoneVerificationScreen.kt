@@ -106,7 +106,7 @@ private fun VerificationAppBar() {
     )
 
     if (state.error != null) {
-        AppBanner(state.error!!) {
+        AppBanner(state.error!!, customMsg = state.error?.message) {
             viewModel.resetErrorState()
         }
     }

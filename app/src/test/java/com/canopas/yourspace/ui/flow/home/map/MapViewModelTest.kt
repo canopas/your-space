@@ -191,12 +191,13 @@ class MapViewModelTest {
         val flow = flow {
             emit("space1")
         }
+        val exception = RuntimeException("error")
         whenever(userPreferences.currentUser).thenReturn(user)
         whenever(userPreferences.currentSpaceState).thenReturn(flow)
         whenever(spaceRepository.getMemberWithLocation()).thenReturn(flowOf(emptyList()))
-        whenever(spaceRepository.getCurrentSpace()).thenThrow(RuntimeException("error"))
+        whenever(spaceRepository.getCurrentSpace()).thenThrow(exception)
         setUp()
         viewModel.addMember()
-        assert(viewModel.state.value.error == "error")
+        assert(viewModel.state.value.error == exception)
     }
 }

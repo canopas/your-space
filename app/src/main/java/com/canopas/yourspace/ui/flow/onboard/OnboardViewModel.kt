@@ -108,7 +108,7 @@ class OnboardViewModel @Inject constructor(
             )
         } catch (e: Exception) {
             Timber.e(e, "Unable to create space")
-            _state.emit(_state.value.copy(creatingSpace = false, error = e.localizedMessage))
+            _state.emit(_state.value.copy(creatingSpace = false, error = e))
         }
     }
 
@@ -163,7 +163,7 @@ class OnboardViewModel @Inject constructor(
             _state.emit(
                 _state.value.copy(
                     verifyingInviteCode = false,
-                    error = e.localizedMessage
+                    error = e
                 )
             )
         }
@@ -210,7 +210,7 @@ data class OnboardScreenState(
     val verifyingInviteCode: Boolean = false,
     val errorInvalidInviteCode: Boolean = false,
     val alreadySpaceMember: Boolean = false,
-    val error: String? = null
+    val error: Exception? = null
 )
 
 sealed class OnboardItems {

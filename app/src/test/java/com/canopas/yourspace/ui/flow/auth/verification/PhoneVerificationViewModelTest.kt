@@ -10,6 +10,7 @@ import com.canopas.yourspace.data.utils.AppDispatcher
 import com.canopas.yourspace.ui.navigation.AppDestinations.OtpVerificationNavigation.KEY_PHONE_NO
 import com.canopas.yourspace.ui.navigation.AppDestinations.OtpVerificationNavigation.KEY_VERIFICATION_ID
 import com.canopas.yourspace.ui.navigation.AppNavigator
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.PhoneAuthCredential
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -172,18 +173,19 @@ class PhoneVerificationViewModelTest {
 
     @Test
     fun `verifyOtp should set verifying to false and error if exception is thrown`() = runTest {
+        val exception = mock<FirebaseException>()
         whenever(
             firebaseAuth.signInWithPhoneAuthCredential(
                 "verificationId",
                 "12356"
             )
-        ).thenThrow(RuntimeException("Error"))
+        ).doSuspendableAnswer { throw exception }
 
         viewModel.updateOTP("12356")
         viewModel.verifyOTP()
 
         assert(!viewModel.state.value.verifying)
-        assert(viewModel.state.value.error == "Error")
+        assert(viewModel.state.value.error == exception)
     }
 
     @Test
@@ -221,11 +223,12 @@ class PhoneVerificationViewModelTest {
     fun `resetCode should update verifying to false and set error on verification failed`() =
         runTest {
             val context = mock<Context>()
+            val exception = mock<FirebaseException>()
             whenever(firebaseAuth.verifyPhoneNumber(context, "1234567890"))
-                .thenReturn(flowOf(PhoneAuthState.VerificationFailed(RuntimeException("Error"))))
+                .thenReturn(flowOf(PhoneAuthState.VerificationFailed(exception)))
             viewModel.resendCode(context)
             assert(!viewModel.state.value.verifying)
-            assert(viewModel.state.value.error == "Error")
+            assert(viewModel.state.value.error == exception)
         }
 
     @Test

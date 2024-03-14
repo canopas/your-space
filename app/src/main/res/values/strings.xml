@@ -15,6 +15,9 @@
     <string name="common_btn_cancel">Cancel</string>
     <string name="common_unknown">Unknown</string>
 
+    <string name="network_error_text">Network error occurred. Please check your internet connection.</string>
+    <string name="server_error_text">Server error occurred. Please try again later.</string>
+    <string name="unexpected_error_text">An unexpected error occurred.</string>
 
     <string name="common_share_invite_code_message">Let\'s stay connected! Use invite code %s to join my Space.\n<a href="https://play.google.com/store/apps/details?id=com.canopas.yourspace">Download the app</a>.</string>
 
@@ -23,6 +26,7 @@
     <string name="intro_content_three">Simplify your connections and insights – explore drive reports, location history effortlessly.</string>
     <string name="get_started">Get started</string>
     <string name="sign_in_btn_continue_with_phone">Continue with Phone Number</string>
+    <string name="sign_in_with_google_failed_error_msg">Failed to sign in with google</string>
     <string name="sign_in_btn_continue_with_google">Continue with Google</string>
     <string name="phone_sign_in_title_enter_phone_number">Enter Phone Number</string>
     <string name="phone_sign_in_subtitle_verification_message">We\'ll verify your phone number with a verification code.</string>

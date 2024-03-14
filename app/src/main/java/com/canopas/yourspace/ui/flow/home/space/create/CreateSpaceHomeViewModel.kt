@@ -45,7 +45,7 @@ class CreateSpaceHomeViewModel @Inject constructor(
             )
         } catch (e: Exception) {
             Timber.e(e, "Unable to create space")
-            _state.emit(_state.value.copy(creatingSpace = false, error = e.localizedMessage))
+            _state.emit(_state.value.copy(creatingSpace = false, error = e))
         }
     }
 
@@ -58,5 +58,5 @@ data class CreateSpaceHomeState(
     val spaceName: String = "",
     val spaceInviteCode: String? = "",
     val creatingSpace: Boolean = false,
-    val error: String? = null
+    val error: Exception? = null
 )

@@ -108,7 +108,7 @@ class MapViewModel @Inject constructor(
             )
         } catch (e: Exception) {
             Timber.e(e, "Failed to get invite code")
-            _state.emit(_state.value.copy(error = e.message, loadingInviteCode = false))
+            _state.emit(_state.value.copy(error = e, loadingInviteCode = false))
         }
     }
 
@@ -132,5 +132,5 @@ data class MapScreenState(
     val selectedUser: UserInfo? = null,
     val showUserDetails: Boolean = false,
     val loadingInviteCode: Boolean = false,
-    val error: String? = null
+    val error: Exception? = null
 )

@@ -67,7 +67,7 @@ class JoinSpaceViewModel @Inject constructor(
             _state.emit(
                 _state.value.copy(
                     verifying = false,
-                    error = e.localizedMessage
+                    error = e
                 )
             )
         }
@@ -84,7 +84,7 @@ class JoinSpaceViewModel @Inject constructor(
 data class JoinSpaceState(
     val inviteCode: String = "",
     val verifying: Boolean = false,
-    val error: String? = null,
+    val error: Exception? = null,
     val joinedSpace: ApiSpace? = null,
     val errorInvalidInviteCode: Boolean = false
 )

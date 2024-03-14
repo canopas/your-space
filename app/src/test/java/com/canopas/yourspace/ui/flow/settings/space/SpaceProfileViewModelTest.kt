@@ -32,7 +32,7 @@ class SpaceProfileViewModelTest {
     private val user2 = ApiUser(id = "user2", first_name = "first_name", last_name = "last_name")
     private val userInfo1 = UserInfo(user1, isLocationEnable = true)
     private val userInfo2 = UserInfo(user2)
-    private val members = listOf<UserInfo>(userInfo1, userInfo2)
+    private val members = listOf(userInfo1, userInfo2)
 
     val space_info1 = SpaceInfo(space = space, members = members)
 
@@ -44,6 +44,8 @@ class SpaceProfileViewModelTest {
     private val spaceRepository = mock<SpaceRepository>()
     private val navigator = mock<AppNavigator>()
     private val authService = mock<AuthService>()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val testDispatcher = AppDispatcher(IO = UnconfinedTestDispatcher())
 
     private lateinit var viewModel: SpaceProfileViewModel
@@ -113,9 +115,10 @@ class SpaceProfileViewModelTest {
 
     @Test
     fun `fetchSpaceDetails should update state with error when exception is thrown`() = runTest {
-        whenever(spaceRepository.getCurrentSpaceInfo()).thenThrow(RuntimeException("Error"))
+        val exception = RuntimeException("Error")
+        whenever(spaceRepository.getCurrentSpaceInfo()).thenThrow(exception)
         setup()
-        assert(viewModel.state.value.error == "Error")
+        assert(viewModel.state.value.error == exception)
         assert(!viewModel.state.value.isLoading)
     }
 
@@ -306,12 +309,13 @@ class SpaceProfileViewModelTest {
 
     @Test
     fun `deleteSpace should update state with error if exception is thrown`() = runTest {
+        val exception = RuntimeException("Error")
         whenever(spaceRepository.getCurrentSpaceInfo()).thenReturn(space_info1)
         whenever(authService.currentUser).thenReturn(user1)
-        whenever(spaceRepository.deleteSpace(space.id)).thenThrow(RuntimeException("Error"))
+        whenever(spaceRepository.deleteSpace(space.id)).thenThrow(exception)
         setup()
         viewModel.deleteSpace()
-        assert(viewModel.state.value.error == "Error")
+        assert(viewModel.state.value.error == exception)
     }
 
     @Test
@@ -348,11 +352,12 @@ class SpaceProfileViewModelTest {
 
     @Test
     fun `leaveSpace should update state with error if exception is thrown`() = runTest {
+        val exception = RuntimeException("Error")
         whenever(spaceRepository.getCurrentSpaceInfo()).thenReturn(space_info1)
         whenever(authService.currentUser).thenReturn(user1)
-        whenever(spaceRepository.leaveSpace(space.id)).thenThrow(RuntimeException("Error"))
+        whenever(spaceRepository.leaveSpace(space.id)).thenThrow(exception)
         setup()
         viewModel.leaveSpace()
-        assert(viewModel.state.value.error == "Error")
+        assert(viewModel.state.value.error == exception)
     }
 }

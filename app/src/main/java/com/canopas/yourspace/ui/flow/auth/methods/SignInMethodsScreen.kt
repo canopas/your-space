@@ -87,7 +87,10 @@ private fun SignInContent(modifier: Modifier) {
     }
 
     if (state.error != null) {
-        AppBanner(state.error!!) { viewModel.resetErrorState() }
+        AppBanner(
+            msg = state.error!!,
+            customMsg = stringResource(id = R.string.sign_in_with_google_failed_error_msg)
+        ) { viewModel.resetErrorState() }
     }
 }
 

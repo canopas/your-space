@@ -112,7 +112,7 @@ class SignInMethodViewModelTest {
         whenever(firebaseAuth.signInWithGoogleAuthCredential("token"))
             .thenThrow(RuntimeException())
         viewModel.proceedGoogleSignIn(account)
-        assert(viewModel.state.value.error == "Failed to sign in with google")
+        assert(viewModel.state.value.error != null)
     }
 
     @Test

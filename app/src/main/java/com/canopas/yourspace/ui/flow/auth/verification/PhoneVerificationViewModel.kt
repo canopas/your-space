@@ -78,7 +78,7 @@ class PhoneVerificationViewModel @Inject constructor(
             _state.tryEmit(_state.value.copy(verifying = false))
         } catch (e: Exception) {
             Timber.e(e, "OTP Verification: Error while verifying OTP.")
-            _state.tryEmit(_state.value.copy(verifying = false, error = e.message))
+            _state.tryEmit(_state.value.copy(verifying = false, error = e))
         }
     }
 
@@ -110,7 +110,7 @@ class PhoneVerificationViewModel @Inject constructor(
                         _state.tryEmit(
                             _state.value.copy(
                                 verifying = false,
-                                error = result.e.message
+                                error = result.e
                             )
                         )
                     }
@@ -138,5 +138,5 @@ data class PhoneVerificationState(
     val verifying: Boolean = false,
     val enableVerify: Boolean = false,
     val verificationId: String = "",
-    val error: String? = null
+    val error: Exception? = null
 )

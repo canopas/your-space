@@ -91,7 +91,7 @@ class HomeScreenViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to get all spaces")
-            _state.emit(_state.value.copy(error = e.message, isLoadingSpaces = false))
+            _state.emit(_state.value.copy(error = e, isLoadingSpaces = false))
         }
     }
 
@@ -132,7 +132,7 @@ class HomeScreenViewModel @Inject constructor(
             )
         } catch (e: Exception) {
             Timber.e(e, "Failed to get invite code")
-            _state.emit(_state.value.copy(error = e.message, isLoadingSpaces = false))
+            _state.emit(_state.value.copy(error = e, isLoadingSpaces = false))
         }
     }
 
@@ -143,7 +143,7 @@ class HomeScreenViewModel @Inject constructor(
     fun toggleLocation() = viewModelScope.launch(appDispatcher.IO) {
         try {
             val userId = userPreferences.currentUser?.id ?: return@launch
-            val spaceId = spaceRepository.currentSpaceId ?: return@launch
+            val spaceId = spaceRepository.currentSpaceId
             if (spaceId.isEmpty()) return@launch
             _state.emit(_state.value.copy(enablingLocation = true))
             val locationEnabled = !_state.value.locationEnabled
@@ -157,7 +157,7 @@ class HomeScreenViewModel @Inject constructor(
             )
         } catch (e: Exception) {
             Timber.e(e, "Failed to get invite code")
-            _state.emit(_state.value.copy(error = e.message))
+            _state.emit(_state.value.copy(error = e))
         }
     }
 
@@ -175,5 +175,5 @@ data class HomeScreenState(
     val showSpaceSelectionPopup: Boolean = false,
     val locationEnabled: Boolean = true,
     val enablingLocation: Boolean = false,
-    val error: String? = null
+    val error: Exception? = null
 )

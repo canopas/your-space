@@ -87,7 +87,7 @@ fun SignInWithPhoneScreen() {
     }
 
     if (state.error != null) {
-        AppBanner(state.error!!) { viewModel.resetErrorState() }
+        AppBanner(state.error!!, customMsg = state.error?.message) { viewModel.resetErrorState() }
     }
 }
 

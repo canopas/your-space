@@ -287,19 +287,19 @@ sealed class HomeTab(
     @DrawableRes val resourceIdLine: Int,
     @DrawableRes val resourceIdFilled: Int
 ) {
-    object Main : HomeTab(
+    data object Main : HomeTab(
         "Main",
         R.drawable.ic_tab_home_outlined,
         R.drawable.ic_tab_home_filled
     )
 
-    object Places : HomeTab(
+    data object Places : HomeTab(
         "Places",
         R.drawable.ic_tab_places_outlined,
         R.drawable.ic_tab_places_filled
     )
 
-    object Activities : HomeTab(
+    data object Activities : HomeTab(
         "Activities",
         R.drawable.ic_tab_activities_outlined,
         R.drawable.ic_tab_activities_filled

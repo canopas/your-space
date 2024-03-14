@@ -54,7 +54,7 @@ class SpaceProfileViewModel @Inject constructor(
             )
         } catch (e: Exception) {
             Timber.e(e, "Failed to fetch space detail")
-            _state.emit(_state.value.copy(error = e.message, isLoading = false))
+            _state.emit(_state.value.copy(error = e, isLoading = false))
         }
     }
 
@@ -115,7 +115,7 @@ class SpaceProfileViewModel @Inject constructor(
             navigator.navigateBack()
         } catch (e: Exception) {
             Timber.e(e, "Failed to save space")
-            _state.emit(_state.value.copy(saving = false, error = e.message))
+            _state.emit(_state.value.copy(saving = false, error = e))
         }
     }
 
@@ -145,7 +145,7 @@ class SpaceProfileViewModel @Inject constructor(
             Timber.e(e, "Failed to delete space")
             _state.emit(
                 _state.value.copy(
-                    error = e.message,
+                    error = e,
                     deletingSpace = false,
                     showDeleteSpaceConfirmation = false
                 )
@@ -167,7 +167,7 @@ class SpaceProfileViewModel @Inject constructor(
             Timber.e(e, "Failed to leave space")
             _state.emit(
                 _state.value.copy(
-                    error = e.message,
+                    error = e,
                     leavingSpace = false,
                     showLeaveSpaceConfirmation = false
                 )
@@ -189,5 +189,5 @@ data class SpaceProfileState(
     val showDeleteSpaceConfirmation: Boolean = false,
     val showLeaveSpaceConfirmation: Boolean = false,
     val allowSave: Boolean = false,
-    val error: String? = null
+    val error: Exception? = null
 )

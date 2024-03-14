@@ -120,7 +120,7 @@ class JoinSpaceViewModelTest {
         whenever(invitationService.getInvitation(code)).thenThrow(exception)
         viewModel.onCodeChanged(code)
         viewModel.verifyAndJoinSpace()
-        assert(viewModel.state.value.error == "Error")
+        assert(viewModel.state.value.error == exception)
         assert(!viewModel.state.value.verifying)
     }
 

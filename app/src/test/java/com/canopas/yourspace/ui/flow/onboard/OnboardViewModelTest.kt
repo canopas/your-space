@@ -164,9 +164,10 @@ class OnboardViewModelTest {
 
     @Test
     fun `createSpace should set error state if createSpace throws exception`() = runTest {
-        whenever(spaceRepository.createSpaceAndGetInviteCode("space")).thenThrow(RuntimeException("error"))
+        val exception = RuntimeException("error")
+        whenever(spaceRepository.createSpaceAndGetInviteCode("space")).thenThrow(exception)
         viewModel.createSpace("space")
-        assert(viewModel.state.value.error == "error")
+        assert(viewModel.state.value.error == exception)
     }
 
     @Test
@@ -294,11 +295,12 @@ class OnboardViewModelTest {
 
     @Test
     fun `submitInviteCode should set error state if getInvitation throws exception`() = runTest {
+        val exception = RuntimeException("error")
         viewModel.onInviteCodeChanged("inviteCode")
 
-        whenever(invitationService.getInvitation("inviteCode")).thenThrow(RuntimeException("error"))
+        whenever(invitationService.getInvitation("inviteCode")).thenThrow(exception)
         viewModel.submitInviteCode()
-        assert(viewModel.state.value.error == "error")
+        assert(viewModel.state.value.error == exception)
     }
 
     @Test

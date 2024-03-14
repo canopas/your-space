@@ -75,7 +75,7 @@ class EditProfileViewModel @Inject constructor(
             navigator.navigateBack()
         } catch (e: Exception) {
             Timber.e(e, "Failed to save user")
-            _state.emit(_state.value.copy(saving = false, error = e.message))
+            _state.emit(_state.value.copy(saving = false, error = e))
         }
     }
 
@@ -131,12 +131,12 @@ class EditProfileViewModel @Inject constructor(
                 }
             }.addOnFailureListener {
                 Timber.e(it, "Failed to upload profile image")
-                _state.value = _state.value.copy(profileUrl = null, isImageUploadInProgress = false)
+                _state.value = _state.value.copy(profileUrl = null, isImageUploadInProgress = false, error = it)
                 onChange()
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to upload profile image")
-            _state.emit(_state.value.copy(isImageUploadInProgress = false, error = e.message))
+            _state.emit(_state.value.copy(isImageUploadInProgress = false, error = e))
         }
     }
 
@@ -181,7 +181,7 @@ class EditProfileViewModel @Inject constructor(
             _state.emit(_state.value.copy(deletingAccount = false))
         } catch (e: Exception) {
             Timber.e(e, "Failed to delete account")
-            _state.emit(_state.value.copy(deletingAccount = false, error = e.message))
+            _state.emit(_state.value.copy(deletingAccount = false, error = e))
         }
     }
 }
@@ -195,7 +195,7 @@ data class EditProfileState(
     val showProfileChooser: Boolean = false,
     val showDeleteAccountConfirmation: Boolean = false,
     val deletingAccount: Boolean = false,
-    val error: String? = null,
+    val error: Exception? = null,
     val firstName: String? = null,
     val lastName: String? = null,
     val email: String? = null,

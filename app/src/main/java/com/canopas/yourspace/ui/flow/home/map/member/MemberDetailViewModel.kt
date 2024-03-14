@@ -58,7 +58,7 @@ class MemberDetailViewModel @Inject constructor(
             _dataPagingSource?.invalidate()
         } catch (e: Exception) {
             Timber.e(e, "Failed to fetch location history")
-            _state.emit(_state.value.copy(error = e.message))
+            _state.emit(_state.value.copy(error = e))
         }
     }
 }
@@ -67,5 +67,5 @@ data class MemberDetailState(
     val selectedUser: UserInfo? = null,
     val selectedTimeFrom: Long? = null,
     val selectedTimeTo: Long? = null,
-    val error: String? = null
+    val error: Exception? = null
 )
