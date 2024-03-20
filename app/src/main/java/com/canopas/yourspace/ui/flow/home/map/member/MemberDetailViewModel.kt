@@ -26,7 +26,7 @@ class MemberDetailViewModel @Inject constructor(
 
     private var _dataPagingSource: LocationHistoryPagingSource? = null
 
-    val location = Pager(
+    val locations = Pager(
         config = PagingConfig(
             pageSize = 8
         )

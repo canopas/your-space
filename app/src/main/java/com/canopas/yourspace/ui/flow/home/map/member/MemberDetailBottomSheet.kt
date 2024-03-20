@@ -1,22 +1,29 @@
 package com.canopas.yourspace.ui.flow.home.map.member
 
-import android.content.Context
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Refresh
@@ -38,19 +45,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.canopas.yourspace.R
-import com.canopas.yourspace.data.models.location.ApiLocation
+import com.canopas.yourspace.data.models.location.LocationJourney
 import com.canopas.yourspace.data.models.user.UserInfo
 import com.canopas.yourspace.ui.component.AppProgressIndicator
 import com.canopas.yourspace.ui.component.UserProfile
@@ -63,7 +73,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 @Composable
 fun MemberDetailBottomSheetContent(
@@ -71,15 +80,16 @@ fun MemberDetailBottomSheetContent(
 ) {
     val viewModel = hiltViewModel<MemberDetailViewModel>()
     val state by viewModel.state.collectAsState()
-    val locations = viewModel.location.collectAsLazyPagingItems()
+    val locations = viewModel.locations.collectAsLazyPagingItems()
 
     LaunchedEffect(userInfo) {
         val calendar = Calendar.getInstance()
-        calendar.add(Calendar.HOUR_OF_DAY, -24)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
         val timestamp = calendar.timeInMillis
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
         viewModel.fetchUserLocationHistory(
             from = timestamp,
-            to = System.currentTimeMillis(),
+            to = calendar.timeInMillis,
             userInfo
         )
     }
@@ -91,13 +101,15 @@ fun MemberDetailBottomSheetContent(
         Spacer(modifier = Modifier.height(10.dp))
 
         FilterOption(
-            selectedFromTimestamp = state.selectedTimeFrom ?: 0,
-            selectedToTimestamp = state.selectedTimeTo ?: 0
+            selectedFromTimestamp = state.selectedTimeFrom ?: 0
         ) {
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = it
-            calendar.add(Calendar.DAY_OF_MONTH, 1)
-            viewModel.fetchUserLocationHistory(from = it, to = calendar.timeInMillis)
+            val calendar = Calendar.getInstance().apply {
+                timeInMillis = it
+            }
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            val timestamp = calendar.timeInMillis
+            calendar.set(Calendar.HOUR_OF_DAY, 23)
+            viewModel.fetchUserLocationHistory(from = timestamp, to = calendar.timeInMillis)
         }
         LocationHistory(locations)
     }
@@ -105,7 +117,7 @@ fun MemberDetailBottomSheetContent(
 
 @Composable
 fun LocationHistory(
-    locations: LazyPagingItems<ApiLocation>
+    locations: LazyPagingItems<LocationJourney>
 ) {
     Box {
         when {
@@ -124,7 +136,6 @@ fun LocationHistory(
                 LazyColumn {
                     items(locations.itemCount) { index ->
                         val location = locations[index]
-
                         LocationHistoryItem(
                             location!!,
                             index,
@@ -174,22 +185,32 @@ private fun EmptyHistory() {
 }
 
 @Composable
-private fun LocationHistoryItem(location: ApiLocation, index: Int, isLastItem: Boolean) {
+private fun LocationHistoryItem(
+    location: LocationJourney,
+    index: Int,
+    isLastItem: Boolean
+) {
     val context = LocalContext.current
-    var address by remember { mutableStateOf("") }
+    var fromAddress by remember { mutableStateOf("") }
+    var toAddress by remember {
+        mutableStateOf("")
+    }
     LaunchedEffect(location) {
         withContext(Dispatchers.IO) {
             val latLng =
-                LatLng(location.latitude, location.longitude)
-            address = latLng.getAddress(context) ?: ""
+                LatLng(location.fromLatitude, location.fromLongitude)
+            val toLatLng = LatLng(location.toLatitude ?: 0.0, location.toLongitude ?: 0.0)
+            fromAddress = latLng.getAddress(context) ?: ""
+            toAddress = toLatLng.getAddress(context) ?: ""
         }
     }
-    val lastUpdated = getFormattedTimeString(context, location.created_at ?: 0L)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = if (index % 2 == 0) Arrangement.Start else Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -201,47 +222,84 @@ private fun LocationHistoryItem(location: ApiLocation, index: Int, isLastItem: B
                 modifier = Modifier
                     .size(32.dp)
                     .background(
-                        color = if (index == 0) AppTheme.colorScheme.primary.copy(alpha = 0.5f) else AppTheme.colorScheme.containerHigh,
+                        color = if (location.isSticky) {
+                            AppTheme.colorScheme.primary.copy(
+                                alpha = 0.5f
+                            )
+                        } else {
+                            AppTheme.colorScheme.alertColor.copy(
+                                alpha = 0.5f
+                            )
+                        },
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    if (address.isEmpty()) Icons.Outlined.Refresh else Icons.Default.LocationOn,
-                    contentDescription = "",
-                    tint = AppTheme.colorScheme.surface,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(2.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            if (!isLastItem) {
-                Divider(
-                    thickness = 2.dp,
-                    modifier = Modifier
-                        .width(2.dp)
-                        .height(48.dp),
-                    color = AppTheme.colorScheme.containerHigh
-                )
+                if (location.isSticky) {
+                    Icon(
+                        if (fromAddress.isEmpty()) Icons.Outlined.Refresh else Icons.Default.LocationOn,
+                        contentDescription = "",
+                        tint = AppTheme.colorScheme.surface,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(2.dp)
+                    )
+                } else {
+                    Icon(
+                        painterResource(id = R.drawable.ic_location_journey),
+                        contentDescription = "",
+                        tint = AppTheme.colorScheme.surface,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(2.dp)
+                    )
+                }
             }
         }
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp)
+                .fillMaxWidth(0.8f)
+                .padding(16.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .border(
+                    width = 1.dp,
+                    color = AppTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(16.dp)
+                )
         ) {
-            Text(
-                text = address,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                style = AppTheme.appTypography.subTitle2.copy(color = AppTheme.colorScheme.textPrimary)
-            )
-            Spacer(modifier = Modifier.height(10.dp))
+            if (fromAddress.isEmpty()) {
+                Shimmer()
+            } else {
+                if (location.isSticky) {
+                    Text(
+                        text = fromAddress,
+                        style = AppTheme.appTypography.subTitle2.copy(color = AppTheme.colorScheme.textPrimary),
+                        modifier = Modifier
+                            .padding(16.dp)
+                    )
+                } else {
+                    Text(
+                        text = "$fromAddress--->$toAddress",
+                        style = AppTheme.appTypography.subTitle2.copy(color = AppTheme.colorScheme.textPrimary),
+                        modifier = Modifier
+                            .padding(16.dp)
+                    )
+                }
+            }
+            location.createdAt?.let {
+                Text(
+                    text = getFormattedCreatedAt(it),
+                    style = AppTheme.appTypography.label2.copy(color = AppTheme.colorScheme.textSecondary),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier
+                    .padding(16.dp)
             ) {
                 Icon(
                     painterResource(id = R.drawable.ic_access_time),
@@ -250,18 +308,77 @@ private fun LocationHistoryItem(location: ApiLocation, index: Int, isLastItem: B
                     modifier = Modifier.size(12.dp)
                 )
                 Text(
-                    text = lastUpdated,
+                    text = location.currentLocationDuration ?: location.routeDuration ?: "",
                     style = AppTheme.appTypography.label2.copy(color = AppTheme.colorScheme.textSecondary)
                 )
             }
         }
     }
+
+    if (index % 2 == 0 && !isLastItem) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_right_drawn_icon),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(6f)
+                .rotate(230f)
+                .offset(y = (50).dp, x = -(50).dp)
+        )
+    } else if (index % 2 != 0 && !isLastItem) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_left_drawn_icon),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(6f)
+                .rotate(150f)
+                .offset(x = 50.dp, y = 20.dp)
+        )
+    }
+}
+
+@Composable
+fun Shimmer() {
+    val gradient = listOf(
+        Color.LightGray.copy(alpha = 0.9f), // darker grey (90% opacity)
+        Color.LightGray.copy(alpha = 0.5f) // lighter grey (30% opacity)
+    )
+
+    val transition = rememberInfiniteTransition(label = "") // animate infinite times
+
+    val translateAnimation = transition.animateFloat( // animate the transition
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1000, // duration for the animation
+                easing = FastOutLinearInEasing
+            )
+        ),
+        label = ""
+    )
+    val brush = Brush.linearGradient(
+        colors = gradient,
+        start = Offset(200f, 200f),
+        end = Offset(
+            x = translateAnimation.value,
+            y = translateAnimation.value
+        )
+    )
+    Spacer(
+        modifier = Modifier
+            .padding(4.dp)
+            .fillMaxWidth()
+            .height(30.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(brush)
+    )
 }
 
 @Composable
 fun FilterOption(
     selectedFromTimestamp: Long,
-    selectedToTimestamp: Long,
     onTimeSelected: (Long) -> Unit = {}
 ) {
     var showDatePicker by remember {
@@ -284,7 +401,7 @@ fun FilterOption(
         }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = getFormattedFilterLabel(selectedFromTimestamp, selectedToTimestamp),
+                    text = getFormattedFilterLabel(selectedFromTimestamp),
                     style = AppTheme.appTypography.body2.copy(color = AppTheme.colorScheme.textSecondary),
                     modifier = Modifier.padding(end = 5.dp)
                 )
@@ -301,7 +418,6 @@ fun FilterOption(
 
     if (showDatePicker) {
         ShowDatePicker(
-            selectedFromTimestamp,
             confirmButtonClick = { timestamp ->
                 showDatePicker = false
 
@@ -317,20 +433,18 @@ fun FilterOption(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowDatePicker(
-    selectedTimestamp: Long? = null,
     confirmButtonClick: (Long) -> Unit,
     dismissButtonClick: () -> Unit
 ) {
-    val calendar = Calendar.getInstance()
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedTimestamp ?: calendar.timeInMillis
+        initialSelectedDateMillis = System.currentTimeMillis()
     )
     DatePickerDialog(
         onDismissRequest = {},
         confirmButton = {
             TextButton(onClick = {
                 confirmButtonClick(
-                    datePickerState.selectedDateMillis ?: calendar.timeInMillis
+                    datePickerState.selectedDateMillis ?: System.currentTimeMillis()
                 )
             }) {
                 Text(text = "Confirm")
@@ -402,32 +516,14 @@ fun UserInfoContent(userInfo: UserInfo) {
     }
 }
 
-private fun getFormattedTimeString(context: Context, timestamp: Long): String {
-    val now = System.currentTimeMillis()
-    val elapsedTime = now - timestamp
-    return when {
-        elapsedTime < TimeUnit.MINUTES.toMillis(1) -> context.getString(R.string.map_user_item_location_updated_now)
-        elapsedTime < TimeUnit.HOURS.toMillis(1) -> context.getString(
-            R.string.map_user_item_location_updated_minutes_ago,
-            "${TimeUnit.MILLISECONDS.toMinutes(elapsedTime)}"
-        )
-
-        elapsedTime < TimeUnit.DAYS.toMillis(1) ->
-            SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(timestamp))
-
-        else -> SimpleDateFormat("h:mm a • d MMM", Locale.getDefault()).format(Date(timestamp))
-    }
+fun getFormattedFilterLabel(startTimestamp: Long): String {
+    val startDate = Date(startTimestamp)
+    val startDateFormat = SimpleDateFormat("d MMM", Locale.getDefault())
+    return startDateFormat.format(startDate)
 }
 
-fun getFormattedFilterLabel(startTimestamp: Long, endTimestamp: Long): String {
-    val startDate = Date(startTimestamp)
-    val endDate = Date(endTimestamp)
-
-    val startDateFormat = SimpleDateFormat("d MMM", Locale.getDefault())
-    val endDateFormat = SimpleDateFormat("d MMM", Locale.getDefault())
-
-    val startDateFormatted = startDateFormat.format(startDate)
-    val endDateFormatted = endDateFormat.format(endDate)
-
-    return "$startDateFormatted • $endDateFormatted"
+fun getFormattedCreatedAt(createdAt: Long): String {
+    val createdAtTime = Date(createdAt)
+    val createdAtFormat = SimpleDateFormat("d MMM HH:mm", Locale.getDefault())
+    return createdAtFormat.format(createdAtTime)
 }

@@ -6,6 +6,7 @@ import com.canopas.yourspace.data.utils.snapshotFlow
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -57,6 +58,15 @@ class ApiLocationService @Inject constructor(
         locationRef(userId).whereEqualTo("user_id", userId)
             .orderBy("created_at", Query.Direction.DESCENDING).limit(1)
             .snapshotFlow(ApiLocation::class.java)
+
+    suspend fun getLastLocation(userId: String) = try {
+        locationRef(userId).whereEqualTo("user_id", userId)
+            .orderBy("created_at", Query.Direction.DESCENDING).limit(1)
+            .get().await().documents.firstOrNull()?.toObject(ApiLocation::class.java)
+    } catch (e: Exception) {
+        Timber.e(e, "Error while getting last location")
+        null
+    }
 
     fun getLocationHistoryQuery(userId: String, from: Long, to: Long) =
         locationRef(userId).whereEqualTo("user_id", userId)

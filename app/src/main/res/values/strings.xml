@@ -93,6 +93,7 @@
     <string name="join_space_success_popup_message">You\'re now a member of the %s group for sharing your real-time location.</string>
     <string name="map_user_item_location_updated_now">Just now</string>
     <string name="map_user_item_location_updated_minutes_ago">%s minutes ago</string>
+    <string name="map_user_item_location_updated_duration">%s minutes</string>
     <string name="map_user_item_location_updated_hours_ago">%s hours ago</string>
     <string name="map_user_item_location_updated_since_days">Since %s</string>
     <string name="map_user_item_location_unknown">Location not found</string>
