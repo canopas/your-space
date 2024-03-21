@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.canopas.yourspace.R
 import com.canopas.yourspace.data.models.user.UserInfo
@@ -30,11 +32,11 @@ fun MapUserItem(
 ) {
     val user = userInfo.user
     Column(
-        modifier = Modifier
+        modifier = Modifier.width(80.dp)
             .clickable {
                 onClick()
             }
-            .padding(14.dp),
+            .padding(vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         UserProfile(
@@ -45,6 +47,8 @@ fun MapUserItem(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = user.first_name ?: "",
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
             style = AppTheme.appTypography.label1.copy(color = AppTheme.colorScheme.textPrimary)
         )
     }

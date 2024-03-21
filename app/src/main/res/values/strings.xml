@@ -14,7 +14,8 @@
     <string name="common_btn_add">Add</string>
     <string name="common_btn_cancel">Cancel</string>
     <string name="common_unknown">Unknown</string>
-
+    <string name="common_today">Today</string>
+    <string name="common_yesterday">Yesterday</string>
 
     <string name="common_share_invite_code_message">Let\'s stay connected! Use invite code %s to join my Space.\n<a href="https://play.google.com/store/apps/details?id=com.canopas.yourspace">Download the app</a>.</string>
 
@@ -92,8 +93,8 @@
     <string name="join_space_title">Join Space</string>
     <string name="join_space_success_popup_message">You\'re now a member of the %s group for sharing your real-time location.</string>
     <string name="map_user_item_location_updated_now">Just now</string>
-    <string name="map_user_item_location_updated_minutes_ago">%s minutes ago</string>
-    <string name="map_user_item_location_updated_hours_ago">%s hours ago</string>
+    <string name="map_user_item_location_updated_minutes_ago">%s min ago</string>
+    <string name="map_user_item_location_updated_hours_ago">%s hr ago</string>
     <string name="map_user_item_location_updated_since_days">Since %s</string>
     <string name="map_user_item_location_unknown">Location not found</string>
     <string name="map_user_item_location_off">Location turned off</string>
@@ -146,6 +147,19 @@
     <string name="space_settings_delete_confrim_message">Confirming will permanently delete this space and associated data. This action cannot be undone.</string>
     <string name="space_settings_leave_confrim_btn">Leave</string>
     <string name="space_settings_leave_confrim_message">Are you sure you want to leave this space? You will no longer be able to view or share location with members of this space.</string>
+    <string name="threads_screen_subtitle_messages">Messages</string>
+    <string name="threads_screen_no_members_title">Add members to send messages</string>
+    <string name="threads_screen_no_members_subtitle">At least one member needs to join your space to be able to chat.</string>
+    <string name="thread_screen_add_new_member">Add a new member</string>
+    <string name="threads_screen_no_threads">Tap on \'+\' to send new message to anyone in your space</string>
+    <string name="messages_member_all">All</string>
+    <string name="messages_new_message_hint">Type message</string>
+    <string name="messages_time_format_minutes">%s min</string>
+    <string name="messages_label_seen">Seen</string>
+    <string name="messages_label_seen_by">"Seen by %s"</string>
+    <string name="threads_screen_delete_dialogue_title_text">Delete Thread?</string>
+    <string name="threads_screen_delete_dialogue_message_text">Are you sure you want to delete this thread? This action cannot be undone.</string>
+    <string name="threads_screen_delete_dialogue_delete_btn">Delete</string>
 
     <string-array name="home_create_space_name_suggestion">
         <item>Family</item>
@@ -161,5 +175,7 @@
 
 
     </string-array>
+
+
 
 </resources>

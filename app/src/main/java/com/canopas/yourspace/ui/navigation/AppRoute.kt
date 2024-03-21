@@ -113,6 +113,7 @@ object AppDestinations {
         override val arguments: List<NamedNavArgument> = emptyList()
         override val path: String = "join-space"
     }
+
     object SpaceInvitation {
         const val KEY_INVITE_CODE = "invite_code"
         const val KEY_SPACE_NAME = "space_name"
@@ -131,6 +132,29 @@ object AppDestinations {
             )
 
             override val path = "$PATH/$inviteCode/$spaceName"
+        }
+    }
+
+    val spaceThreads = object : AppRoute {
+        override val arguments: List<NamedNavArgument> = emptyList()
+        override val path: String = "space-threads"
+    }
+
+    object ThreadMessages {
+        const val KEY_THREAD_ID = "thread_id"
+
+        private const val PATH = "messages"
+        const val path = "$PATH?$KEY_THREAD_ID={$KEY_THREAD_ID}"
+
+        fun messages(
+            threadId: String? = ""
+        ) = object : AppRoute {
+
+            override val arguments = listOf(
+                navArgument(KEY_THREAD_ID) { type = NavType.StringType }
+            )
+
+            override val path = "$PATH?$KEY_THREAD_ID=$threadId"
         }
     }
 }

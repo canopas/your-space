@@ -118,11 +118,14 @@ fun HomeTopBar() {
 
         SpaceSelectionMenu(modifier = Modifier.weight(1f))
 
-//        MapControl(
-//            icon = R.drawable.ic_messages,
-//            visible = !state.showSpaceSelectionPopup
-//        ) {
-//        }
+        if (!state.selectedSpaceId.isNullOrEmpty()) {
+            MapControl(
+                icon = R.drawable.ic_messages,
+                visible = !state.showSpaceSelectionPopup
+            ) {
+                viewModel.navigateToThreads()
+            }
+        }
 
         Box {
             if (state.showSpaceSelectionPopup) {
@@ -131,7 +134,7 @@ fun HomeTopBar() {
                 ) {
                     viewModel.addMember()
                 }
-            } else {
+            } else if (!state.selectedSpaceId.isNullOrEmpty()) {
                 MapControl(
                     icon = if (state.locationEnabled) R.drawable.ic_location_on else R.drawable.ic_location_off,
                     showLoader = state.enablingLocation

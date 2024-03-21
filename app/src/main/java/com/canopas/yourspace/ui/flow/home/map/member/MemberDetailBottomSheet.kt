@@ -1,6 +1,5 @@
 package com.canopas.yourspace.ui.flow.home.map.member
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +54,7 @@ import com.canopas.yourspace.data.models.user.UserInfo
 import com.canopas.yourspace.ui.component.AppProgressIndicator
 import com.canopas.yourspace.ui.component.UserProfile
 import com.canopas.yourspace.ui.theme.AppTheme
+import com.canopas.yourspace.utils.formattedTimeAgoString
 import com.canopas.yourspace.utils.getAddress
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
@@ -63,7 +63,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 @Composable
 fun MemberDetailBottomSheetContent(
@@ -184,7 +183,7 @@ private fun LocationHistoryItem(location: ApiLocation, index: Int, isLastItem: B
             address = latLng.getAddress(context) ?: ""
         }
     }
-    val lastUpdated = getFormattedTimeString(context, location.created_at ?: 0L)
+    val lastUpdated = (location.created_at ?: 0L).formattedTimeAgoString(context)
 
     Row(
         modifier = Modifier
@@ -399,23 +398,6 @@ fun UserInfoContent(userInfo: UserInfo) {
 //                    .padding(2.dp)
 //            )
 //        }
-    }
-}
-
-private fun getFormattedTimeString(context: Context, timestamp: Long): String {
-    val now = System.currentTimeMillis()
-    val elapsedTime = now - timestamp
-    return when {
-        elapsedTime < TimeUnit.MINUTES.toMillis(1) -> context.getString(R.string.map_user_item_location_updated_now)
-        elapsedTime < TimeUnit.HOURS.toMillis(1) -> context.getString(
-            R.string.map_user_item_location_updated_minutes_ago,
-            "${TimeUnit.MILLISECONDS.toMinutes(elapsedTime)}"
-        )
-
-        elapsedTime < TimeUnit.DAYS.toMillis(1) ->
-            SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(timestamp))
-
-        else -> SimpleDateFormat("h:mm a • d MMM", Locale.getDefault()).format(Date(timestamp))
     }
 }
 

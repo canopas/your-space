@@ -47,6 +47,7 @@ class ApiSpaceService @Inject constructor(
                 )
                 it.set(member).await()
             }
+
         apiUserService.addSpaceId(userId, spaceId)
     }
 

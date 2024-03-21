@@ -42,7 +42,7 @@ class SpaceInvitationService @Inject constructor(
         if (invitation != null) {
             val newCode = generateInvitationCode()
             val docRef = spaceInvitationRef.document(invitation.id)
-            docRef.update("code", newCode).await()
+            docRef.update("code", newCode, "created_at", System.currentTimeMillis()).await()
             return newCode
         }
         return ""
