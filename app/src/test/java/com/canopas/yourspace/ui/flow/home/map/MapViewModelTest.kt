@@ -8,6 +8,7 @@ import com.canopas.yourspace.data.models.user.UserInfo
 import com.canopas.yourspace.data.repository.SpaceRepository
 import com.canopas.yourspace.data.service.location.LocationManager
 import com.canopas.yourspace.data.service.place.ApiPlaceService
+import com.canopas.yourspace.data.service.user.ApiUserService
 import com.canopas.yourspace.data.storage.UserPreferences
 import com.canopas.yourspace.data.utils.AppDispatcher
 import com.canopas.yourspace.ui.navigation.AppNavigator
@@ -36,6 +37,7 @@ class MapViewModelTest {
     private val userPreferences = mock<UserPreferences>()
     private val locationManager = mock<LocationManager>()
     private val apiPlaceService = mock<ApiPlaceService>()
+    private val apiUserService = mock<ApiUserService>()
     private val navigator = mock<AppNavigator>()
     private val testDispatcher = AppDispatcher(IO = UnconfinedTestDispatcher())
 
@@ -48,6 +50,7 @@ class MapViewModelTest {
             locationManager = locationManager,
             apiPlaceService = apiPlaceService,
             appDispatcher = testDispatcher,
+            apiUserService = apiUserService,
             navigator = navigator
         )
     }

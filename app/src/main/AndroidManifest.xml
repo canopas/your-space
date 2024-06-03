@@ -51,15 +51,6 @@
             android:name=".data.receiver.geofence.GeofenceBroadcastReceiver"
             android:exported="false" />
 
-        <receiver
-            android:name=".domain.receiver.NetworkConnectionReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-            </intent-filter>
-        </receiver>
-
         <activity
             android:name="com.canhub.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />

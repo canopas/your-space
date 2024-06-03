@@ -10,7 +10,7 @@ import com.canopas.yourspace.data.repository.GeofenceRepository
 import com.canopas.yourspace.data.service.auth.AuthService
 import com.canopas.yourspace.data.service.location.LocationManager
 import com.canopas.yourspace.data.utils.isLocationPermissionGranted
-import com.canopas.yourspace.domain.utils.isNetWorkConnected
+import com.canopas.yourspace.domain.utils.NetworkUtils.isNetWorkConnected
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +37,7 @@ class BootCompleteReceiver : BroadcastReceiver() {
             locationManager.startService()
             scope.launch { geofenceRepository.registerAllPlaces() }
 
-            val connected = context.isNetWorkConnected()
+            val connected = isNetWorkConnected(context)
             val hasLocationPermission = context.isLocationPermissionGranted
             val state = if (connected && hasLocationPermission) {
                 USER_STATE_UNKNOWN

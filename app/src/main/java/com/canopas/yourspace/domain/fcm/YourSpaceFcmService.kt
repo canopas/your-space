@@ -15,6 +15,8 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.canopas.yourspace.R
+import com.canopas.yourspace.data.models.user.USER_STATE_UNKNOWN
+import com.canopas.yourspace.data.service.auth.AuthService
 import com.canopas.yourspace.data.storage.UserPreferences
 import com.canopas.yourspace.ui.MainActivity
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -57,6 +59,10 @@ object NotificationGeofenceConst {
     const val KEY_EVENT_BY = "eventBy"
 }
 
+object NotificationNetworkStatusConst {
+    const val NOTIFICATION_TYPE_NETWORK_CHECK = "network_status"
+}
+
 @AndroidEntryPoint
 class YourSpaceFcmService : FirebaseMessagingService() {
     @Inject
@@ -64,6 +70,9 @@ class YourSpaceFcmService : FirebaseMessagingService() {
 
     @Inject
     lateinit var notificationManager: NotificationManager
+
+    @Inject
+    lateinit var authService: AuthService
 
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
@@ -86,22 +95,30 @@ class YourSpaceFcmService : FirebaseMessagingService() {
             val type = message.data[KEY_NOTIFICATION_TYPE]
 
             if (title != null && body != null) {
-                if (type == NotificationChatConst.NOTIFICATION_TYPE_CHAT) {
-                    scope.launch {
-                        val bitmap =
-                            if (profile.isNullOrEmpty()) null else getTrackBitmapFromUrl(profile)
-                        sendNotification(
-                            this@YourSpaceFcmService,
-                            title,
-                            body,
-                            message.data,
-                            bitmap
-                        )
+                when (type) {
+                    NotificationChatConst.NOTIFICATION_TYPE_CHAT -> {
+                        scope.launch {
+                            val bitmap =
+                                if (profile.isNullOrEmpty()) null else getTrackBitmapFromUrl(profile)
+                            sendNotification(
+                                this@YourSpaceFcmService,
+                                title,
+                                body,
+                                message.data,
+                                bitmap
+                            )
+                        }
                     }
-                } else if (type == NotificationPlaceConst.NOTIFICATION_TYPE_NEW_PLACE_ADDED) {
-                    sendPlaceNotification(this, title, body, message.data)
-                } else if (type == NotificationGeofenceConst.NOTIFICATION_TYPE_GEOFENCE) {
-                    sendGeoFenceNotification(this, title, body, message.data)
+                    NotificationPlaceConst.NOTIFICATION_TYPE_NEW_PLACE_ADDED -> {
+                        sendPlaceNotification(this, title, body, message.data)
+                    }
+                    NotificationGeofenceConst.NOTIFICATION_TYPE_GEOFENCE -> {
+                        sendGeoFenceNotification(this, title, body, message.data)
+                    }
+                    NotificationNetworkStatusConst.NOTIFICATION_TYPE_NETWORK_CHECK -> {
+                        // Update user session state
+                        scope.launch { authService.updateUserSessionState(USER_STATE_UNKNOWN) }
+                    }
                 }
             }
         }

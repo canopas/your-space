@@ -309,3 +309,46 @@ exports.sendGeoFenceNotification = onCall(async (request) => {
                 }
 
             });
+
+exports.networkStatusCheck = onCall(async (request) => {
+    const db = admin.firestore();
+    const data = request.data;
+    const userId = data.userId;
+
+    const userSnapshot = await db.collection('users').doc(userId).get();
+    if (!userSnapshot.exists) {
+        console.log('User not found');
+        return;
+    }
+
+    const user = userSnapshot.data();
+
+    if (user.fcm_token === undefined) {
+        console.log('User does not have FCM token');
+        return;
+    }
+
+    const payload = {
+        token: user.fcm_token,
+        notification: {
+            title: "Network Status",
+            body: "Checking network status..."
+        },
+        data: {
+            userId: userId,
+            type: 'network_status'
+        }
+    };
+
+    admin.messaging().send(payload).then((response) => {
+        console.log("Successfully sent network status message:", response);
+        return {
+            success: true
+        };
+    }).catch((error) => {
+        console.log("Failed to send network status message:", error.code);
+        return {
+            error: error.code
+        };
+    });
+});

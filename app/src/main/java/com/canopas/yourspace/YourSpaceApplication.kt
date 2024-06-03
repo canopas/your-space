@@ -3,12 +3,15 @@ package com.canopas.yourspace
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.IntentFilter
 import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.work.Configuration
+import com.canopas.yourspace.callback.NetworkStatusCallback
 import com.canopas.yourspace.data.repository.GeofenceRepository
 import com.canopas.yourspace.data.service.auth.AuthService
 import com.canopas.yourspace.data.service.auth.AuthStateChangeListener
@@ -17,6 +20,8 @@ import com.canopas.yourspace.domain.fcm.FcmRegisterWorker
 import com.canopas.yourspace.domain.fcm.YOURSPACE_CHANNEL_GEOFENCE
 import com.canopas.yourspace.domain.fcm.YOURSPACE_CHANNEL_MESSAGES
 import com.canopas.yourspace.domain.fcm.YOURSPACE_CHANNEL_PLACES
+import com.canopas.yourspace.domain.receiver.NetworkConnectionReceiver
+import com.canopas.yourspace.domain.utils.NetworkUtils
 import com.google.android.libraries.places.api.Places
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
@@ -45,6 +50,9 @@ class YourSpaceApplication :
     @Inject
     lateinit var notificationManager: NotificationManager
 
+    private lateinit var networkStatusCallback: NetworkStatusCallback
+    private lateinit var networkConnectionReceiver: NetworkConnectionReceiver
+
     override fun onCreate() {
         Places.initializeWithNewPlacesApiEnabled(this, BuildConfig.PLACE_API_KEY)
 
@@ -54,6 +62,15 @@ class YourSpaceApplication :
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         authService.addListener(this)
         setNotificationChannel()
+
+        networkStatusCallback = NetworkStatusCallback(this)
+        networkConnectionReceiver = NetworkConnectionReceiver()
+
+        NetworkUtils.registerNetworkCallback(this, networkStatusCallback)
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            networkConnectionReceiver,
+            IntentFilter(NetworkConnectionReceiver.NETWORK_STATUS_ACTION)
+        )
 
         if (userPreferences.currentUser != null) {
             geoFenceRepository.init()
@@ -115,5 +132,11 @@ class YourSpaceApplication :
         if (userPreferences.currentUser != null && !userPreferences.isFCMRegistered) {
             FcmRegisterWorker.startService(this)
         }
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        super.onDestroy(owner)
+        NetworkUtils.unregisterNetworkCallback(this, networkStatusCallback)
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(networkConnectionReceiver)
     }
 }
