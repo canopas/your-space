@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -51,7 +52,7 @@ class SpaceRepository @Inject constructor(
         val userId = authService.currentUser?.id ?: ""
         return getUserSpaces(userId).flatMapLatest { spaces ->
             if (spaces.isEmpty()) return@flatMapLatest flowOf(emptyList())
-            val flows = spaces.filterNotNull().map { space ->
+            val flows = spaces.map { space ->
                 spaceService.getMemberBySpaceId(space.id)
                     .map { members ->
                         members.mapNotNull { member ->
@@ -97,19 +98,25 @@ class SpaceRepository @Inject constructor(
 
         if (spaceId.isEmpty()) {
             val userId = authService.currentUser?.id ?: ""
-            return getUserSpaces(userId).firstOrNull()?.sortedBy { it?.created_at }?.firstOrNull()
+            return getUserSpaces(userId).firstOrNull()?.sortedBy { it.created_at }?.firstOrNull()
         }
         return getSpace(spaceId)
     }
 
-    suspend fun getUserSpaces(userId: String) =
-        spaceService.getSpaceMemberByUserId(userId).map {
-            it.map { spaceMember ->
-                val spaceId = spaceMember.space_id
-                val space = spaceService.getSpace(spaceId)
-                space
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getUserSpaces(userId: String): Flow<List<ApiSpace>> {
+        if (userId.isEmpty()) return emptyFlow()
+        return spaceService.getSpaceMemberByUserId(userId).flatMapMerge { members ->
+
+            if (members.isEmpty()) return@flatMapMerge flowOf(emptyList())
+            val spaceFlows: List<Flow<ApiSpace?>> = members.map { apiSpaceMember ->
+                spaceService.getSpaceFlow(apiSpaceMember.space_id)
+            }
+            combine(spaceFlows) { spaces ->
+                spaces.filterNotNull()
             }
         }
+    }
 
     suspend fun getSpace(spaceId: String): ApiSpace? = spaceService.getSpace(spaceId)
 
@@ -156,7 +163,7 @@ class SpaceRepository @Inject constructor(
 
     suspend fun deleteUserSpaces() {
         val userId = authService.currentUser?.id ?: ""
-        val allSpace = getUserSpaces(userId).firstOrNull()?.filterNotNull() ?: emptyList()
+        val allSpace = getUserSpaces(userId).firstOrNull() ?: emptyList()
         val ownSpace = allSpace.filter { it.admin_id == userId }
         val joinedSpace = allSpace.filter { it.admin_id != userId }
 
@@ -174,7 +181,7 @@ class SpaceRepository @Inject constructor(
         spaceService.deleteSpace(spaceId)
         val userId = authService.currentUser?.id ?: ""
         currentSpaceId =
-            getUserSpaces(userId).firstOrNull()?.sortedBy { it?.created_at }?.firstOrNull()?.id
+            getUserSpaces(userId).firstOrNull()?.sortedBy { it.created_at }?.firstOrNull()?.id
                 ?: ""
     }
 
@@ -182,7 +189,7 @@ class SpaceRepository @Inject constructor(
         val userId = authService.currentUser?.id ?: ""
         spaceService.removeUserFromSpace(spaceId, userId)
         currentSpaceId =
-            getUserSpaces(userId).firstOrNull()?.sortedBy { it?.created_at }?.firstOrNull()?.id
+            getUserSpaces(userId).firstOrNull()?.sortedBy { it.created_at }?.firstOrNull()?.id
                 ?: ""
     }
 

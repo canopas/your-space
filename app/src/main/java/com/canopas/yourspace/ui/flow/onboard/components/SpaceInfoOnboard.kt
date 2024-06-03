@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -29,7 +27,6 @@ import com.canopas.yourspace.ui.theme.AppTheme
 @Composable
 fun SpaceInfoOnboard() {
     val viewModel = hiltViewModel<OnboardViewModel>()
-    val state by viewModel.state.collectAsState()
 
     Column(
         Modifier
@@ -61,6 +58,7 @@ fun SpaceInfoOnboard() {
         Spacer(modifier = Modifier.height(16.dp))
 
         PrimaryOutlinedButton(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             label = stringResource(R.string.common_btn_skip),
             onClick = { viewModel.navigateToHome() }
         )

@@ -68,6 +68,8 @@ class ApiSpaceService @Inject constructor(
     suspend fun getSpace(spaceId: String) =
         spaceRef.document(spaceId).get().await().toObject(ApiSpace::class.java)
 
+    fun getSpaceFlow(spaceId: String) = spaceRef.document(spaceId).snapshotFlow(ApiSpace::class.java)
+
     fun getSpaceMemberByUserId(userId: String) =
         db.collectionGroup(FIRESTORE_COLLECTION_SPACE_MEMBERS).whereEqualTo("user_id", userId)
             .snapshotFlow(ApiSpaceMember::class.java)
