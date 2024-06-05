@@ -135,11 +135,14 @@ private fun MemberProfileView(profileUrl: String?, name: String, session: ApiUse
 private fun MemberInfoView(userName: String, location: ApiLocation?, onTapTimeline: () -> Unit) {
     val context = LocalContext.current
     var address by remember { mutableStateOf("") }
-    val time = timeAgo(location?.created_at ?: 0)
+    val time = timeAgo(location?.created_at)
 
     LaunchedEffect(location) {
+        if (location == null) {
+            address = ""; return@LaunchedEffect
+        }
         withContext(Dispatchers.IO) {
-            val latLng = LatLng(location!!.latitude, location.longitude)
+            val latLng = LatLng(location.latitude, location.longitude)
             address = latLng.getAddress(context) ?: ""
         }
     }
@@ -167,18 +170,20 @@ private fun MemberInfoView(userName: String, location: ApiLocation?, onTapTimeli
             modifier = Modifier.padding(top = 12.dp)
         )
 
-        Row(modifier = Modifier.padding(top = 4.dp)) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_access_time),
-                contentDescription = "",
-                tint = AppTheme.colorScheme.textDisabled,
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = time,
-                style = AppTheme.appTypography.caption.copy(color = AppTheme.colorScheme.textDisabled)
-            )
+        if (time.isNotEmpty()) {
+            Row(modifier = Modifier.padding(top = 4.dp)) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_access_time),
+                    contentDescription = "",
+                    tint = AppTheme.colorScheme.textDisabled,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = time,
+                    style = AppTheme.appTypography.caption.copy(color = AppTheme.colorScheme.textDisabled)
+                )
+            }
         }
     }
 }

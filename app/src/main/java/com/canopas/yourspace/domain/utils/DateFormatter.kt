@@ -79,7 +79,8 @@ fun Long.isToday(): Boolean {
     )
 }
 
-fun timeAgo(timestamp: Long): String {
+fun timeAgo(timestamp: Long?): String {
+    if (timestamp == null) return ""
     val now = System.currentTimeMillis()
     val seconds = (now - timestamp) / 1000
 

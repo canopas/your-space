@@ -79,6 +79,53 @@ class ApiPlaceService @Inject constructor(
         }
     }
 
+    suspend fun joinUserToExistingPlaces(
+        userId: String,
+        spaceId: String,
+        spaceMemberIds: List<String>
+    ) {
+        val filterIds = spaceMemberIds.filter { it != userId }
+        val spaces = getPlaces(spaceId)
+
+        spaces.forEach { place ->
+            getPlaceMemberSettings(place.id, spaceId).forEach { setting ->
+                val newSettings = setting.copy(
+                    arrival_alert_for = updateAlertUsersList(setting.arrival_alert_for, userId),
+                    leave_alert_for = updateAlertUsersList(setting.leave_alert_for, userId)
+                )
+                updatePlaceSettings(place, setting.user_id, newSettings)
+            }
+            val newUserSettings = ApiPlaceMemberSetting(
+                place_id = place.id,
+                user_id = userId,
+                arrival_alert_for = filterIds,
+                leave_alert_for = filterIds
+            )
+            updatePlaceSettings(place, userId, newUserSettings)
+        }
+    }
+
+    private fun updateAlertUsersList(alertUsers: List<String>, newUserId: String): List<String> {
+        return if (alertUsers.contains(newUserId)) alertUsers else alertUsers + newUserId
+    }
+
+    suspend fun removedUserFromExistingPlaces(spaceId: String, userId: String) {
+        val spaces = getPlaces(spaceId)
+        spaces.forEach { place ->
+            getPlaceMemberSettings(place.id, spaceId).forEach { setting ->
+                if (setting.user_id == userId) {
+                    deletePlaceSetting(setting.place_id, spaceId, userId)
+                } else {
+                    val newSettings = setting.copy(
+                        arrival_alert_for = setting.arrival_alert_for.filter { it != userId },
+                        leave_alert_for = setting.leave_alert_for.filter { it != userId }
+                    )
+                    updatePlaceSettings(place, setting.user_id, newSettings)
+                }
+            }
+        }
+    }
+
     suspend fun getPlaces(spaceId: String): List<ApiPlace> {
         val places = spacePlacesRef(spaceId).get().await()
         return places.toObjects(ApiPlace::class.java).sortedByDescending { it.created_at }
@@ -129,17 +176,20 @@ class ApiPlaceService @Inject constructor(
         userId: String,
         setting: ApiPlaceMemberSetting
     ) {
-        spacePlacesSettingsRef(place.space_id, place.id)
-            .document(userId).set(setting).await()
+        spacePlacesSettingsRef(place.space_id, place.id).document(userId).set(setting).await()
+    }
+
+    suspend fun deletePlaceSetting(placeId: String, spaceId: String, userId: String) {
+        spacePlacesSettingsRef(spaceId, placeId).document(userId).delete().await()
     }
 
     suspend fun findPlace(query: String): List<Place> {
         if (query.trim().isEmpty()) return emptyList()
-        val placeFields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS)
+        val placeFields =
+            listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS)
 
-        val searchByTextRequest = SearchByTextRequest.builder(query, placeFields)
-            .setMaxResultCount(20)
-            .build()
+        val searchByTextRequest =
+            SearchByTextRequest.builder(query, placeFields).setMaxResultCount(20).build()
         val response = placesClient.searchByText(searchByTextRequest).await()
         return response.places
     }

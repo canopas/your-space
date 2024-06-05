@@ -5,6 +5,7 @@ import com.canopas.yourspace.data.models.space.SpaceInfo
 import com.canopas.yourspace.data.models.user.UserInfo
 import com.canopas.yourspace.data.service.auth.AuthService
 import com.canopas.yourspace.data.service.location.ApiLocationService
+import com.canopas.yourspace.data.service.place.ApiPlaceService
 import com.canopas.yourspace.data.service.space.ApiSpaceService
 import com.canopas.yourspace.data.service.space.SpaceInvitationService
 import com.canopas.yourspace.data.service.user.ApiUserService
@@ -22,6 +23,7 @@ import javax.inject.Inject
 class SpaceRepository @Inject constructor(
     private val authService: AuthService,
     private val spaceService: ApiSpaceService,
+    private val placeService: ApiPlaceService,
     private val invitationService: SpaceInvitationService,
     private val userService: ApiUserService,
     private val locationService: ApiLocationService,
@@ -44,14 +46,21 @@ class SpaceRepository @Inject constructor(
     suspend fun joinSpace(spaceId: String) {
         spaceService.joinSpace(spaceId)
         currentSpaceId = spaceId
+
+        val userId = authService.currentUser?.id ?: return
+        val memberIds = getMemberBySpaceId(spaceId)?.map { it.user_id }
+            ?: emptyList()
+
+        placeService.joinUserToExistingPlaces(userId, spaceId, memberIds)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun getAllSpaceInfo(): Flow<List<SpaceInfo>> {
         val userId = authService.currentUser?.id ?: ""
         return getUserSpaces(userId).flatMapLatest { spaces ->
-            if (spaces.isEmpty()) return@flatMapLatest flowOf(emptyList())
-            val flows = spaces.filterNotNull().map { space ->
+            val filterSpaces = spaces.filterNotNull()
+            if (filterSpaces.isEmpty()) return@flatMapLatest flowOf(emptyList())
+            val flows = filterSpaces.map { space ->
                 spaceService.getMemberBySpaceId(space.id)
                     .map { members ->
                         members.mapNotNull { member ->
@@ -181,9 +190,12 @@ class SpaceRepository @Inject constructor(
     suspend fun leaveSpace(spaceId: String) {
         val userId = authService.currentUser?.id ?: ""
         spaceService.removeUserFromSpace(spaceId, userId)
-        currentSpaceId =
-            getUserSpaces(userId).firstOrNull()?.sortedBy { it?.created_at }?.firstOrNull()?.id
-                ?: ""
+        val spaces = getUserSpaces(userId)
+        currentSpaceId = spaces.firstOrNull()?.sortedBy { it?.created_at }?.firstOrNull()?.id
+            ?: ""
+        val idList = spaces.firstOrNull()?.mapNotNull { it?.id } ?: emptyList()
+        val newUser = authService.currentUser?.copy(space_ids = idList)
+        newUser?.let { authService.updateUser(it) }
     }
 
     suspend fun updateSpace(newSpace: ApiSpace) {

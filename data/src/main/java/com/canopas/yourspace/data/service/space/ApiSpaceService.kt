@@ -5,6 +5,7 @@ import com.canopas.yourspace.data.models.space.ApiSpaceMember
 import com.canopas.yourspace.data.models.space.SPACE_MEMBER_ROLE_ADMIN
 import com.canopas.yourspace.data.models.space.SPACE_MEMBER_ROLE_MEMBER
 import com.canopas.yourspace.data.service.auth.AuthService
+import com.canopas.yourspace.data.service.place.ApiPlaceService
 import com.canopas.yourspace.data.service.user.ApiUserService
 import com.canopas.yourspace.data.utils.Config
 import com.canopas.yourspace.data.utils.Config.FIRESTORE_COLLECTION_SPACES
@@ -19,7 +20,8 @@ import javax.inject.Singleton
 class ApiSpaceService @Inject constructor(
     private val db: FirebaseFirestore,
     private val authService: AuthService,
-    private val apiUserService: ApiUserService
+    private val apiUserService: ApiUserService,
+    private val placeService: ApiPlaceService
 ) {
     private val spaceRef = db.collection(FIRESTORE_COLLECTION_SPACES)
     private fun spaceMemberRef(spaceId: String) =
@@ -87,6 +89,7 @@ class ApiSpaceService @Inject constructor(
     }
 
     suspend fun removeUserFromSpace(spaceId: String, userId: String) {
+        placeService.removedUserFromExistingPlaces(spaceId, userId)
         spaceMemberRef(spaceId)
             .whereEqualTo("user_id", userId).get().await().documents.forEach {
                 it.reference.delete().await()
