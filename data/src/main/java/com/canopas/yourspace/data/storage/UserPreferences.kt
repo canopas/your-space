@@ -42,6 +42,7 @@ class UserPreferences @Inject constructor(
         val KEY_USER_CURRENT_SPACE = stringPreferencesKey("user_current_space")
 
         val IS_FCM_REGISTERED = booleanPreferencesKey("is_fcm_registered")
+        val LAST_BATTERY_DIALOG_DATE = stringPreferencesKey("last_battery_dialog_date")
     }
 
     suspend fun isIntroShown(): Boolean {
@@ -51,6 +52,16 @@ class UserPreferences @Inject constructor(
     suspend fun setIntroShown(value: Boolean) {
         preferencesDataStore.edit { preferences ->
             preferences[PreferencesKey.INTRO_SHOWN] = value
+        }
+    }
+
+    suspend fun getLastBatteryDialogDate(): String? {
+        return preferencesDataStore.data.first()[PreferencesKey.LAST_BATTERY_DIALOG_DATE]
+    }
+
+    suspend fun setLastBatteryDialogDate(value: String) {
+        preferencesDataStore.edit { preferences ->
+            preferences[PreferencesKey.LAST_BATTERY_DIALOG_DATE] = value
         }
     }
 
