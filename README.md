@@ -1,6 +1,6 @@
 <p align="center"> <a href="https://canopas.com/contact"><img src="./screenshots/cta_banner2.png"></a></p>
 
-# YourSpace - Stay connected, Anywhere!
+# YourSpace - Share Live Location
 Enhancing family safety and communication with real-time location sharing and modern UIs.
 
 <img src="./screenshots/cover_image.png" />
@@ -21,11 +21,11 @@ YourSpace is currently in active development 🚧, with plans to incorporate add
 YourSpace ensures your loved ones' well-being with:
 
 - [X] Real-time Location Sharing
-- Secure Communication
-- Geo-fencing
-- Real-time Alerts
-- Check-Ins
-- SOS Help Alert
+- [X] Secure Communication
+- [X] Geo-fencing
+- [X] Real-time Alerts
+- [X] Journey Timeline
+- [ ] SOS Help Alert
 
 ## Screenshots
 
@@ -64,6 +64,7 @@ For more information, refer to the [Firebase documentation](https://firebase.goo
 YourSpace uses the following Firebase services, Make sure you enable them in your Firebase project:
 - Authentication (Phone, Google)
 - Firestore (To store user data)
+- Cloud Functions
 </details>
 
 ## Tech stack
